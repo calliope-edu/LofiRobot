@@ -1,7 +1,6 @@
 /**
  * LOFI ROBOT Bluetooth Extension
  */
-//% weight=20 color=#ff6900 icon="\uf118"
 
 enum RobotAppType {
     //% block="Face-App"
@@ -117,6 +116,7 @@ enum ControlValues {
     Control
 }
 
+//% weight=20 color=#ff6900 icon="\uf118"
 namespace LofiRobot {
     // Face-App Variables
     let face_x = 0
@@ -433,5 +433,4 @@ namespace LofiRobot {
                 return 0
         }
     }
-}
 }
