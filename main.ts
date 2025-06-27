@@ -237,7 +237,7 @@ namespace LofiRobot {
      * Process Robot-Head data from received string
      */
     //% block="Robot-Head-Receiving-Data"
-    //% block.loc.de="Roboter-Kopf-Datenempfang"
+    //% block.loc.de="Roboterkopf-Datenempfang"
     //% block.loc.fr="Tête de robot - Réception de données"
     //% block.loc.es="Cabeza-robot-recibiendo-datos"
     //% block.loc.it="Testa di robot che riceve i dati"
