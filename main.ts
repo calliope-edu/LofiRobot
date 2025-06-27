@@ -99,80 +99,102 @@ enum FaceValues {
     FaceVisible
 }
 
-enum ControlValues {
-    //% block="Joystick X"
-    //% block.loc.de="Joystick X"
-    //% block.loc.fr="Joystick X"
-    //% block.loc.es="Joystick X"
-    //% block.loc.it="Joystick X"
-    //% block.loc.el="Joystick X"
-    XValue,
-    //% block="Slider"
-    //% block.loc.de="Slider"
-    //% block.loc.fr="Slider"
-    //% block.loc.es="Slider"
-    //% block.loc.it="Slider"
-    //% block.loc.el="Slider"
-    Control
+enum ControlCommands {
+    //% blockId="control_up" block="↑"
+    //% block.loc.de="↑"
+    //% block.loc.fr="↑"
+    //% block.loc.es="↑"
+    //% block.loc.it="↑"
+    //% block.loc.el="↑"
+    Up,
+    //% blockId="control_down" block="↓"
+    //% block.loc.de="↓"
+    //% block.loc.fr="↓"
+    //% block.loc.es="↓"
+    //% block.loc.it="↓"
+    //% block.loc.el="↓"
+    Down,
+    //% blockId="control_left" block="←"
+    //% block.loc.de="←"
+    //% block.loc.fr="←"
+    //% block.loc.es="←"
+    //% block.loc.it="←"
+    //% block.loc.el="←"
+    Left,
+    //% blockId="control_right" block="→"
+    //% block.loc.de="→"
+    //% block.loc.fr="→"
+    //% block.loc.es="→"
+    //% block.loc.it="→"
+    //% block.loc.el="→"
+    Right,
+    //% blockId="control_horn" block="🔊"
+    //% block.loc.de="🔊"
+    //% block.loc.fr="🔊"
+    //% block.loc.es="🔊"
+    //% block.loc.it="🔊"
+    //% block.loc.el="🔊"
+    Horn,
+    //% blockId="control_stop" block="⏹"
+    //% block.loc.de="⏹"
+    //% block.loc.fr="⏹"
+    //% block.loc.es="⏹"
+    //% block.loc.it="⏹"
+    //% block.loc.el="⏹"
+    Stop,
+    //% blockId="control_x" block="Slider1"
+    //% block.loc.de="Slider1"
+    //% block.loc.fr="Slider1"
+    //% block.loc.es="Slider1"
+    //% block.loc.it="Slider1"
+    //% block.loc.el="Slider1"
+    XCommand,
+    //% blockId="control_c" block="Slider2"
+    //% block.loc.de="Slider2"
+    //% block.loc.fr="Slider2"
+    //% block.loc.es="Slider2"
+    //% block.loc.it="Slider2"
+    //% block.loc.el="Slider2"
+    CCommand
 }
 
 //% weight=20 color=#ff6900 icon="\uf118"
 namespace LofiRobot {
-    // Face-App Variables
-    let face_x = 0
-    let face_y = 0
-    let face_z = 0
-    let face_yaw = 0
-    let face_pitch = 0
-    let face_mouth = 0
-    let face_left_eye = 0
-    let face_right_eye = 0
-    let face_roll = 0
-    let face_smile = 0
+    // Robot-Head Variables
+    let x = 0
+    let y = 0
+    let z = 0
+    let yaw = 0
+    let pitch = 0
+    let mouth = 0
+    let left_eye = 0
+    let right_eye = 0
+    let roll = 0
+    let smile = 0
     let face_visible = 0
-    let face_app_enabled = false
-
-    // Control Variables
-    let control_x_value = 0
-    let control_command = ""
-    let control_value = 0
-    let control_app_enabled = false
 
     let receivedString = ""
     let bluetoothStarted = false
-    let data_received_handler: () => void = null
-    let current_app_type: RobotAppType = null
+    let controlHandlers: (() => void)[] = []
+    let uartListenerStarted = false
 
     /**
-     * Initialize Bluetooth control for the selected app
-     * @param appType Choose the app (Face-App or Control)
+     * Initialize Bluetooth
      */
-    //% block="Initialize %appType"
-    //% block.loc.de="Initialisiere %appType"
-    //% block.loc.fr="Initialiser %appType"
-    //% block.loc.es="Inicializar %appType"
-    //% block.loc.it="Inizializza %appType"
-    //% block.loc.el="Αρχικοποίηση %appType"
+    //% block="Initialize Bluetooth"
+    //% block.loc.de="Bluetooth initialisieren"
+    //% block.loc.fr="Initialiser Bluetooth"
+    //% block.loc.es="Inicializar Bluetooth"
+    //% block.loc.it="Inizializza Bluetooth"
+    //% block.loc.el="Αρχικοποίηση Bluetooth"
     //% weight=100
-    export function initializeApp(appType: RobotAppType): void {
+    export function initializeBluetooth(): void {
         if (!bluetoothStarted) {
             bluetooth.startUartService()
             basic.showIcon(IconNames.Square)
             bluetoothStarted = true
-        }
-
-        if (appType === RobotAppType.FaceApp) {
-            face_app_enabled = true
-            // Blink center LED 3 times
-            for (let i = 0; i < 3; i++) {
-                led.plot(2, 2)
-                basic.pause(200)
-                led.unplot(2, 2)
-                basic.pause(200)
-            }
-        } else if (appType === RobotAppType.Control) {
-            control_app_enabled = true
-            // Blink center LED 3 times
+            
+            // Blink center LED 3 times to indicate initialization
             for (let i = 0; i < 3; i++) {
                 led.plot(2, 2)
                 basic.pause(200)
@@ -180,189 +202,106 @@ namespace LofiRobot {
                 basic.pause(200)
             }
         }
-
-        // Setup Bluetooth receive function if not already done
-        setupBluetoothReceive()
     }
 
     /**
-     * Executed when Bluetooth data is received
-     * @param handler Code to be executed
+     * Executed when data is received via Bluetooth (for Robot-Head processing)
+     * @param handler Code to be executed when data is received
      */
-    //% block="on Bluetooth connected"
-    //% block.loc.de="wenn Bluetooth empfang"
-    //% block.loc.fr="quand Bluetooth connecté"
-    //% block.loc.es="cuando Bluetooth conectado"
-    //% block.loc.it="quando Bluetooth connesso"
-    //% block.loc.el="όταν συνδέεται Bluetooth"
+    //% block="Robot-Head connection"
+    //% block.loc.de="Roboterkopf-Verbindung"
+    //% block.loc.fr="Connexion de la tête du robot"
+    //% block.loc.es="Conexión de la cabeza del robot"
+    //% block.loc.it="Collegamento testa robot"
+    //% block.loc.el="Σύνδεση κεφαλής ρομπότ"
     //% weight=90
-    export function onBluetoothConnected(handler: () => void): void {
-        bluetooth.onBluetoothConnected(handler)
+    export function onDataReceived(handler: () => void): void {
+        if (!uartListenerStarted) {
+            bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+                receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine))
+                handler()
+                
+                // Execute control handlers
+                for (let i = 0; i < controlHandlers.length; i++) {
+                    if (controlHandlers[i]) {
+                        controlHandlers[i]()
+                    }
+                }
+            })
+            uartListenerStarted = true
+        }
     }
-
+    
+    
     /**
-     * Executed when a Bluetooth connection is disconnected
-     * @param handler Code to be executed
+     * Process Robot-Head data from received string
      */
-    //% block="on Bluetooth disconnected"
-    //% block.loc.de="wenn Bluetooth getrennt"
-    //% block.loc.fr="quand Bluetooth déconnecté"
-    //% block.loc.es="cuando Bluetooth desconectado"
-    //% block.loc.it="quando Bluetooth disconnesso"
-    //% block.loc.el="όταν αποσυνδέεται Bluetooth"
+    //% block="Robot-Head-Receiving-Data"
+    //% block.loc.de="Roboter-Kopf-Datenempfang"
+    //% block.loc.fr="Tête de robot - Réception de données"
+    //% block.loc.es="Cabeza-robot-recibiendo-datos"
+    //% block.loc.it="Testa di robot che riceve i dati"
+    //% block.loc.el="Κεφαλή ρομπότ που λαμβάνει δεδομένα"
     //% weight=80
-    export function onBluetoothDisconnected(handler: () => void): void {
-        bluetooth.onBluetoothDisconnected(handler)
-    }
-
-    // Private function to setup Bluetooth receiving
-    function setupBluetoothReceive(): void {
-        bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), () => {
-            receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine))
-
-            // For Face-App: Check if string has correct length and contains numbers
-            if (face_app_enabled && receivedString.length >= 19) {
-                let hasNumbers = parseInt(receivedString) >= 0
-                if (hasNumbers) {
-                    processFaceAppData()
-                    current_app_type = RobotAppType.FaceApp
-                }
-            }
-
-            // For Control: Check if string contains commands
-            if (control_app_enabled) {
-                if (receivedString === "up" ||
-                    receivedString === "down" ||
-                    receivedString === "left" ||
-                    receivedString === "right" ||
-                    receivedString === "horn" ||
-                    receivedString === "stop" ||
-                    receivedString.charAt(0) === "x" ||
-                    receivedString.charAt(0) === "c") {
-
-                    processControlData()
-                    current_app_type = RobotAppType.Control
-                }
-            }
-
-            if (data_received_handler) {
-                data_received_handler()
-            }
-        })
-    }
-
-    /**
-     * Processes Face-App data from received string
-     */
-    function processFaceAppData(): void {
-        face_x = parseFloat(receivedString.substr(0, 2))
-        face_y = parseFloat(receivedString.substr(2, 2))
-        face_z = parseFloat(receivedString.substr(4, 2))
-        face_yaw = parseFloat(receivedString.substr(6, 2))
-        face_pitch = parseFloat(receivedString.substr(8, 2))
-        face_mouth = parseFloat(receivedString.substr(10, 2))
-        face_left_eye = parseFloat(receivedString.substr(12, 2))
-        face_right_eye = parseFloat(receivedString.substr(14, 2))
-        face_roll = parseFloat(receivedString.substr(16, 1))
-        face_smile = parseFloat(receivedString.substr(17, 1))
+    export function processRobotHead(): void {
+        x = parseFloat(receivedString.substr(0, 2))
+        y = parseFloat(receivedString.substr(2, 2))
+        z = parseFloat(receivedString.substr(4, 2))
+        yaw = parseFloat(receivedString.substr(6, 2))
+        pitch = parseFloat(receivedString.substr(8, 2))
+        mouth = parseFloat(receivedString.substr(10, 2))
+        left_eye = parseFloat(receivedString.substr(12, 2))
+        right_eye = parseFloat(receivedString.substr(14, 2))
+        roll = parseFloat(receivedString.substr(16, 1))
+        smile = parseFloat(receivedString.substr(17, 1))
         face_visible = parseFloat(receivedString.substr(18, 1))
     }
 
     /**
-     * Processes Control data from received string
+     * Shows a bar graph with the selected Robot-Head value
+     * @param valueType Choose the Robot-Head value to display
      */
-    function processControlData(): void {
-        control_command = receivedString
-        if (receivedString === "up") {
-            basic.showIcon(IconNames.ArrowNorth)
-            control_value = 100
-        } else if (receivedString === "down") {
-            basic.showIcon(IconNames.ArrowSouth)
-            control_value = 50
-        } else if (receivedString === "left") {
-            basic.showIcon(IconNames.ArrowWest)
-            control_value = 25
-        } else if (receivedString === "right") {
-            basic.showIcon(IconNames.ArrowEast)
-            control_value = 75
-        } else if (receivedString === "horn") {
-            basic.showIcon(IconNames.EighthNote)
-            control_value = 90
-        } else if (receivedString === "stop") {
-            basic.showIcon(IconNames.SmallSquare)
-            control_value = 0
-        } else if (receivedString.charAt(0) === "x" || receivedString.charAt(0) === "c") {
-            control_x_value = parseFloat(receivedString.substr(1, 3))
-        }
-    }
-
-    /**
-     * Executed when data is received
-     * @param handler Code to be executed
-     */
-    //% block="Robot connection"
-    //% block.loc.de="Roboterverbindung"
-    //% block.loc.fr="Connexion robot"
-    //% block.loc.es="Conexión robot"
-    //% block.loc.it="Connessione robot"
-    //% block.loc.el="Σύνδεση ρομφότ"
+    //% block="show bar graph for Robot-Head value %valueType"
+    //% block.loc.de="zeige Säulendiagramm für Roboter-Kopf Wert %valueType"
+    //% block.loc.fr="afficher graphique en barres pour valeur Robot-Tête %valueType"
+    //% block.loc.es="mostrar gráfico de barras para valor Robot-Cabeza %valueType"
+    //% block.loc.it="mostra grafico a barre per valore Robot-Testa %valueType"
+    //% block.loc.el="εμφάνιση γραφήματος στηλών για αξία Ρομπότ-Κεφάλι %valueType"
     //% weight=70
-    export function onDataReceived(handler: () => void): void {
-        data_received_handler = handler
-    }
-
-    /**
-     * Returns the current Control command
-     */
-    export function getControlCommand(): string {
-        return control_command
-    }
-
-    /**
-     * Shows a bar graph with the selected Face-App value
-     * @param valueType Choose the Face-App value to display
-     */
-    //% block="show bar graph for Face-App value %valueType"
-    //% block.loc.de="zeige Säulendiagramm für Face-App Wert %valueType"
-    //% block.loc.fr="afficher graphique en barres pour valeur Face-App %valueType"
-    //% block.loc.es="mostrar gráfico de barras para valor Face-App %valueType"
-    //% block.loc.it="mostra grafico a barre per valore Face-App %valueType"
-    //% block.loc.el="εμφάνιση γραφήματος στηλών για αξία Face-App %valueType"
-    //% weight=55
-    export function showFaceBarGraph(valueType: FaceValues): void {
+    export function showRobotHeadBarGraph(valueType: FaceValues): void {
         let valueToShow = 0
         let maxValue = 100
 
         switch (valueType) {
             case FaceValues.X:
-                valueToShow = face_x
+                valueToShow = x
                 break
             case FaceValues.Y:
-                valueToShow = face_y
+                valueToShow = y
                 break
             case FaceValues.Z:
-                valueToShow = face_z
+                valueToShow = z
                 break
             case FaceValues.Yaw:
-                valueToShow = face_yaw
+                valueToShow = yaw
                 break
             case FaceValues.Pitch:
-                valueToShow = face_pitch
+                valueToShow = pitch
                 break
             case FaceValues.Mouth:
-                valueToShow = face_mouth
+                valueToShow = mouth
                 break
             case FaceValues.LeftEye:
-                valueToShow = face_left_eye
+                valueToShow = left_eye
                 break
             case FaceValues.RightEye:
-                valueToShow = face_right_eye
+                valueToShow = right_eye
                 break
             case FaceValues.Roll:
-                valueToShow = face_roll
+                valueToShow = roll
                 break
             case FaceValues.Smile:
-                valueToShow = face_smile
+                valueToShow = smile
                 break
             case FaceValues.FaceVisible:
                 valueToShow = face_visible
@@ -373,38 +312,38 @@ namespace LofiRobot {
     }
 
     /**
-     * Returns the selected Face-App value
+     * Returns the selected Robot-Head value
      * @param value Choose the value to return
      */
-    //% block="Face-App value %value"
-    //% block.loc.de="Face-App Wert %value"
-    //% block.loc.fr="valeur Face-App %value"
-    //% block.loc.es="valor Face-App %value"
-    //% block.loc.it="valore Face-App %value"
-    //% block.loc.el="αξία Face-App %value"
-    //% weight=50
-    export function getFaceValue(value: FaceValues): number {
+    //% block="Robot-Head value %value"
+    //% block.loc.de="Roboter-Kopf Wert %value"
+    //% block.loc.fr="valeur Robot-Tête %value"
+    //% block.loc.es="valor Robot-Cabeza %value"
+    //% block.loc.it="valore Robot-Testa %value"
+    //% block.loc.el="αξία Ρομπότ-Κεφάλι %value"
+    //% weight=60
+    export function getRobotHeadValue(value: FaceValues): number {
         switch (value) {
             case FaceValues.X:
-                return face_x
+                return x
             case FaceValues.Y:
-                return face_y
+                return y
             case FaceValues.Z:
-                return face_z
+                return z
             case FaceValues.Yaw:
-                return face_yaw
+                return yaw
             case FaceValues.Pitch:
-                return face_pitch
+                return pitch
             case FaceValues.Mouth:
-                return face_mouth
+                return mouth
             case FaceValues.LeftEye:
-                return face_left_eye
+                return left_eye
             case FaceValues.RightEye:
-                return face_right_eye
+                return right_eye
             case FaceValues.Roll:
-                return face_roll
+                return roll
             case FaceValues.Smile:
-                return face_smile
+                return smile
             case FaceValues.FaceVisible:
                 return face_visible
             default:
@@ -413,24 +352,129 @@ namespace LofiRobot {
     }
 
     /**
-     * Returns the selected Control value
-     * @param value Choose the value to return
+     * Check if specific control command was received
+     * @param command Choose the control command to check for
      */
-    //% block="Control value %value"
-    //% block.loc.de="Control Wert %value"
-    //% block.loc.fr="valeur Control %value"
-    //% block.loc.es="valor Control %value"
-    //% block.loc.it="valore Control %value"
-    //% block.loc.el="αξία Control %value"
-    //% weight=45
-    export function getControlValue(value: ControlValues): number {
-        switch (value) {
-            case ControlValues.XValue:
-                return control_x_value
-            case ControlValues.Control:
-                return control_value
+    //% block="Control command received %command"
+    //% block.loc.de="Steuerbefehl empfangen %command"
+    //% block.loc.fr="Commande de contrôle reçue %command"
+    //% block.loc.es="Comando de control recibido %command"
+    //% block.loc.it="Comando di controllo ricevuto %command"
+    //% block.loc.el="Εντολή ελέγχου ελήφθη %command"
+    //% command.fieldEditor="gridpicker"
+    //% command.fieldOptions.columns=4
+    //% command.fieldOptions.width="300"
+    //% command.fieldOptions.maxRows=2
+    //% weight=65
+    //% advanced=true
+    export function isControlCommand(command: ControlCommands): boolean {
+        switch (command) {
+            case ControlCommands.Up:
+                return receivedString == "up"
+            case ControlCommands.Down:
+                return receivedString == "down"
+            case ControlCommands.Left:
+                return receivedString == "left"
+            case ControlCommands.Right:
+                return receivedString == "right"
+            case ControlCommands.Horn:
+                return receivedString == "horn"
+            case ControlCommands.Stop:
+                return receivedString == "stop"
+            case ControlCommands.XCommand:
+                return receivedString.charAt(0) == "x"
+            case ControlCommands.CCommand:
+                return receivedString.charAt(0) == "c"
             default:
-                return 0
+                return false
         }
+    }
+
+    /**
+     * Execute code when specific control command is received
+     * @param command Choose the control command to listen for
+     * @param handler Code to execute when the command is received
+     */
+    //% block="When control command %command is received"
+    //% block.loc.de="Wenn Steuerbefehl %command empfangen wird"
+    //% block.loc.fr="Quand la commande de contrôle %command est reçue"
+    //% block.loc.es="Cuando se recibe el comando de control %command"
+    //% block.loc.it="Quando viene ricevuto il comando di controllo %command"
+    //% block.loc.el="Όταν λαμβάνεται εντολή ελέγχου %command"
+    //% command.fieldEditor="gridpicker"
+    //% command.fieldOptions.columns=4
+    //% command.fieldOptions.width="300"
+    //% command.fieldOptions.maxRows=2
+    //% weight=64
+    export function onControlCommand(command: ControlCommands, handler: () => void): void {
+        // Automatically start UART listener if not already started
+        if (!uartListenerStarted) {
+            bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+                receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine))
+                
+                // Execute control handlers
+                for (let i = 0; i < controlHandlers.length; i++) {
+                    if (controlHandlers[i]) {
+                        controlHandlers[i]()
+                    }
+                }
+            })
+            uartListenerStarted = true
+        }
+        
+        controlHandlers.push(function () {
+            if (isControlCommand(command)) {
+                handler()
+            }
+        })
+    }
+
+    /**
+     * Get Slider1 value (for commands starting with 'x')
+     */
+    //% block="Slider1 value"
+    //% block.loc.de="Slider1 Wert"
+    //% block.loc.fr="valeur Slider1"
+    //% block.loc.es="valor Slider1"
+    //% block.loc.it="valore Slider1"
+    //% block.loc.el="αξία Slider1"
+    //% weight=57
+    export function getXCommandValue(): number {
+        if (receivedString.charAt(0) == "x") {
+            return parseFloat(receivedString.substr(1, 3))
+        }
+        return 0
+    }
+
+    /**
+     * Get Slider2 value (for commands starting with 'c')
+     */
+    //% block="Slider2 value"
+    //% block.loc.de="Slider2 Wert"
+    //% block.loc.fr="valeur Slider2"
+    //% block.loc.es="valor Slider2"
+    //% block.loc.it="valore Slider2"
+    //% block.loc.el="αξία Slider2"
+    //% weight=56
+    export function getCCommandValue(): number {
+        if (receivedString.charAt(0) == "c") {
+            return parseFloat(receivedString.substr(1, 3))
+        }
+        return 0
+    }
+
+    /**
+     * Returns the received string from Bluetooth (hidden from UI)
+     */
+    //% block="received string"
+    //% block.loc.de="empfangener Text"
+    //% block.loc.fr="chaîne reçue"
+    //% block.loc.es="cadena recibida"
+    //% block.loc.it="stringa ricevuta"
+    //% block.loc.el="ληφθείσα συμβολοσειρά"
+    //% weight=50
+    //% advanced=true
+    export function getReceivedString(): string {
+        return receivedString
     }
 }
