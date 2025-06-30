@@ -382,9 +382,9 @@ namespace LofiRobot {
             case ControlCommands.Stop:
                 return receivedString == "stop"
             case ControlCommands.XCommand:
-                return receivedString.charAt(0) == "x"
-            case ControlCommands.CCommand:
                 return receivedString.charAt(0) == "c"
+            case ControlCommands.CCommand:
+                return receivedString.charAt(0) == "x"
             default:
                 return false
         }
@@ -430,7 +430,7 @@ namespace LofiRobot {
     }
 
     /**
-     * Get Slider1 value (for commands starting with 'x')
+     * Get Slider1 value (for commands starting with 'c')
      */
     //% block="Slider1 value"
     //% block.loc.de="Slider1 Wert"
@@ -440,14 +440,14 @@ namespace LofiRobot {
     //% block.loc.el="αξία Slider1"
     //% weight=57
     export function getXCommandValue(): number {
-        if (receivedString.charAt(0) == "x") {
+        if (receivedString.charAt(0) == "c") {
             return parseFloat(receivedString.substr(1, 3))
         }
         return 0
     }
 
     /**
-     * Get Slider2 value (for commands starting with 'c')
+     * Get Slider2 value (for commands starting with 'x')
      */
     //% block="Slider2 value"
     //% block.loc.de="Slider2 Wert"
@@ -457,7 +457,7 @@ namespace LofiRobot {
     //% block.loc.el="αξία Slider2"
     //% weight=56
     export function getCCommandValue(): number {
-        if (receivedString.charAt(0) == "c") {
+        if (receivedString.charAt(0) == "x") {
             return parseFloat(receivedString.substr(1, 3))
         }
         return 0
