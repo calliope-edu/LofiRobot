@@ -236,12 +236,12 @@ namespace LofiRobot {
     /**
      * Process Robot-Head data from received string
      */
-    //% block="Robot-Head-Receiving-Data"
-    //% block.loc.de="Roboterkopf-Datenempfang"
-    //% block.loc.fr="Tête de robot - Réception de données"
-    //% block.loc.es="Cabeza-robot-recibiendo-datos"
-    //% block.loc.it="Testa di robot che riceve i dati"
-    //% block.loc.el="Κεφαλή ρομπότ που λαμβάνει δεδομένα"
+    //% block="empfange Bewegungsdaten"
+    //% block.loc.de="empfange Bewegungsdaten"
+    //% block.loc.fr="recevoir les données de mouvement"
+    //% block.loc.es="recibir datos de movimiento"
+    //% block.loc.it="ricevi dati di movimento"
+    //% block.loc.el="λήψη δεδομένων κίνησης"
     //% weight=80
     export function processRobotHead(): void {
         x = parseFloat(receivedString.substr(0, 2))
@@ -261,12 +261,12 @@ namespace LofiRobot {
      * Shows a bar graph with the selected Robot-Head value
      * @param valueType Choose the Robot-Head value to display
      */
-    //% block="show bar graph for Robot-Head value %valueType"
-    //% block.loc.de="zeige Säulendiagramm für Roboter-Kopf Wert %valueType"
-    //% block.loc.fr="afficher graphique en barres pour valeur Robot-Tête %valueType"
-    //% block.loc.es="mostrar gráfico de barras para valor Robot-Cabeza %valueType"
-    //% block.loc.it="mostra grafico a barre per valore Robot-Testa %valueType"
-    //% block.loc.el="εμφάνιση γραφήματος στηλών για αξία Ρομπότ-Κεφάλι %valueType"
+    //% block="show bar graph for movement data value %valueType"
+    //% block.loc.de="zeige Säulendiagramm für Bewegungsdaten vom Wert %valueType"
+    //% block.loc.fr="afficher graphique en barres pour les données de mouvement de la valeur %valueType"
+    //% block.loc.es="mostrar gráfico de barras para datos de movimiento del valor %valueType"
+    //% block.loc.it="mostra grafico a barre per dati di movimento del valore %valueType"
+    //% block.loc.el="εμφάνιση γραφήματος στηλών για δεδομένα κίνησης της αξίας %valueType"
     //% weight=70
     export function showRobotHeadBarGraph(valueType: FaceValues): void {
         let valueToShow = 0
@@ -315,12 +315,12 @@ namespace LofiRobot {
      * Returns the selected Robot-Head value
      * @param value Choose the value to return
      */
-    //% block="Robot-Head value %value"
-    //% block.loc.de="Roboter-Kopf Wert %value"
-    //% block.loc.fr="valeur Robot-Tête %value"
-    //% block.loc.es="valor Robot-Cabeza %value"
-    //% block.loc.it="valore Robot-Testa %value"
-    //% block.loc.el="αξία Ρομπότ-Κεφάλι %value"
+    //% block="movement data from value %value"
+    //% block.loc.de="Bewegungsdaten vom Wert %value"
+    //% block.loc.fr="données de mouvement de la valeur %value"
+    //% block.loc.es="datos de movimiento del valor %value"
+    //% block.loc.it="dati di movimento del valore %value"
+    //% block.loc.el="δεδομένα κίνησης από την αξία %value"
     //% weight=60
     export function getRobotHeadValue(value: FaceValues): number {
         switch (value) {
