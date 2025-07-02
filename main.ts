@@ -42,7 +42,7 @@ enum FaceValues {
     //% block.loc.el="Z"
     Z,
     //% block="Yaw"
-    //% block.loc.de="Gieren"
+    //% block.loc.de="Drehen"
     //% block.loc.fr="Lacet"
     //% block.loc.es="Guiñada"
     //% block.loc.it="Imbardata"
@@ -205,20 +205,35 @@ namespace LofiRobot {
     }
 
     /**
-     * Executed when data is received via Bluetooth (for Robot-Head processing)
-     * @param handler Code to be executed when data is received
+     * Process movement data when received via Bluetooth
+     * @param handler Code to be executed after processing movement data
      */
-    //% block="Robot-Head connection"
-    //% block.loc.de="Roboterkopf-Verbindung"
-    //% block.loc.fr="Connexion de la tête du robot"
-    //% block.loc.es="Conexión de la cabeza del robot"
-    //% block.loc.it="Collegamento testa robot"
-    //% block.loc.el="Σύνδεση κεφαλής ρομπότ"
+    //% block="Bewegungsdaten verarbeiten"
+    //% block.loc.de="Bewegungsdaten verarbeiten"
+    //% block.loc.fr="Traiter les données de mouvement"
+    //% block.loc.es="Procesar datos de movimiento"
+    //% block.loc.it="Elabora dati di movimento"
+    //% block.loc.el="Επεξεργασία δεδομένων κίνησης"
     //% weight=90
     export function onDataReceived(handler: () => void): void {
         if (!uartListenerStarted) {
             bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
                 receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine))
+                
+                // Process robot head data first
+                x = parseFloat(receivedString.substr(0, 2))
+                y = parseFloat(receivedString.substr(2, 2))
+                z = parseFloat(receivedString.substr(4, 2))
+                yaw = parseFloat(receivedString.substr(6, 2))
+                pitch = parseFloat(receivedString.substr(8, 2))
+                mouth = parseFloat(receivedString.substr(10, 2))
+                left_eye = parseFloat(receivedString.substr(12, 2))
+                right_eye = parseFloat(receivedString.substr(14, 2))
+                roll = parseFloat(receivedString.substr(16, 1))
+                smile = parseFloat(receivedString.substr(17, 1))
+                face_visible = parseFloat(receivedString.substr(18, 1))
+                
+                // Then execute user handler
                 handler()
                 
                 // Execute control handlers
@@ -230,31 +245,6 @@ namespace LofiRobot {
             })
             uartListenerStarted = true
         }
-    }
-    
-    
-    /**
-     * Process Robot-Head data from received string
-     */
-    //% block="empfange Bewegungsdaten"
-    //% block.loc.de="empfange Bewegungsdaten"
-    //% block.loc.fr="recevoir les données de mouvement"
-    //% block.loc.es="recibir datos de movimiento"
-    //% block.loc.it="ricevi dati di movimento"
-    //% block.loc.el="λήψη δεδομένων κίνησης"
-    //% weight=80
-    export function processRobotHead(): void {
-        x = parseFloat(receivedString.substr(0, 2))
-        y = parseFloat(receivedString.substr(2, 2))
-        z = parseFloat(receivedString.substr(4, 2))
-        yaw = parseFloat(receivedString.substr(6, 2))
-        pitch = parseFloat(receivedString.substr(8, 2))
-        mouth = parseFloat(receivedString.substr(10, 2))
-        left_eye = parseFloat(receivedString.substr(12, 2))
-        right_eye = parseFloat(receivedString.substr(14, 2))
-        roll = parseFloat(receivedString.substr(16, 1))
-        smile = parseFloat(receivedString.substr(17, 1))
-        face_visible = parseFloat(receivedString.substr(18, 1))
     }
 
     /**
