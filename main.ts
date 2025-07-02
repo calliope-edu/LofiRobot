@@ -184,16 +184,17 @@ namespace LofiRobot {
     }
 
     /**
-     * Start processing movement data received via Bluetooth
+     * Process movement data when received via Bluetooth
+     * @param handler Code to be executed after processing movement data
      */
-    //% block="Start processing movement data"
-    //% block.loc.de="Bewegungsdaten verarbeiten starten"
-    //% block.loc.fr="Commencer le traitement des données de mouvement"
-    //% block.loc.es="Iniciar procesamiento de datos de movimiento"
-    //% block.loc.it="Inizia elaborazione dati di movimento"
-    //% block.loc.el="Έναρξη επεξεργασίας δεδομένων κίνησης"
+    //% block="on movement data received"
+    //% block.loc.de="wenn Bewegungsdaten empfangen"
+    //% block.loc.fr="quand les données de mouvement sont reçues"
+    //% block.loc.es="cuando se reciben datos de movimiento"
+    //% block.loc.it="quando vengono ricevuti dati di movimento"
+    //% block.loc.el="όταν λαμβάνονται δεδομένα κίνησης"
     //% weight=90
-    export function startProcessingData(): void {
+    export function onDataReceived(handler: () => void): void {
         if (!uartListenerStarted) {
             bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
                 receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine))
@@ -210,6 +211,9 @@ namespace LofiRobot {
                 roll = parseFloat(receivedString.substr(16, 1))
                 smile = parseFloat(receivedString.substr(17, 1))
                 face_visible = parseFloat(receivedString.substr(18, 1))
+                
+                // Execute user handler
+                handler()
                 
                 // Execute control handlers
                 for (let i = 0; i < controlHandlers.length; i++) {
