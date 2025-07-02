@@ -42,7 +42,7 @@ enum FaceValues {
     //% block.loc.el="Z"
     Z,
     //% block="Yaw"
-    //% block.loc.de="Drehen"
+    //% block.loc.de="Gieren"
     //% block.loc.fr="Lacet"
     //% block.loc.es="Guiñada"
     //% block.loc.it="Imbardata"
@@ -229,6 +229,23 @@ namespace LofiRobot {
                 mouth = parseFloat(receivedString.substr(10, 2))
                 left_eye = parseFloat(receivedString.substr(12, 2))
                 right_eye = parseFloat(receivedString.substr(14, 2))
+                roll = parseFloat(receivedString.substr(16, 1))
+                smile = parseFloat(receivedString.substr(17, 1))
+                face_visible = parseFloat(receivedString.substr(18, 1))
+                
+                // Then execute user handler
+                handler()
+                
+                // Execute control handlers
+                for (let i = 0; i < controlHandlers.length; i++) {
+                    if (controlHandlers[i]) {
+                        controlHandlers[i]()
+                    }
+                }
+            })
+            uartListenerStarted = true
+        }
+    }receivedString.substr(14, 2))
                 roll = parseFloat(receivedString.substr(16, 1))
                 smile = parseFloat(receivedString.substr(17, 1))
                 face_visible = parseFloat(receivedString.substr(18, 1))
