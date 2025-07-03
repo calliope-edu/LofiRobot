@@ -42,7 +42,7 @@ enum FaceValues {
     //% block.loc.el="Z"
     Z,
     //% block="Yaw"
-    //% block.loc.de="Gieren"
+    //% block.loc.de="Drehen"
     //% block.loc.fr="Lacet"
     //% block.loc.es="Guiñada"
     //% block.loc.it="Imbardata"
