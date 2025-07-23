@@ -4,8 +4,6 @@ You will find the English ReadMe at the end of the document.
 
 Diese Erweiterung kann benutzt werden, um die LOFI Robot Modelle mit weniger Blöcken zu erstellen und gleichzeitig die benötigten Bluetooth-Einstellungen direkt im Projekt integriert zu haben. Es müssen also nicht unbedingt die vorgegebenen Blöcke genutzt werden, man sollte aber trotzdem diese Erweiterung hinzufügen.
 
-> Diese Seite bei [https://calliope-edu.github.io/robots/](https://calliope-edu.github.io/robots/) öffnen
-
 ## Als Erweiterung verwenden
 
 Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
@@ -31,9 +29,7 @@ Um dieses Repository in MakeCode zu bearbeiten.
 
 
 
-# Calliope x LOFI Robot MakeCode Extension
-
-👉 Open this page at [https://calliope-edu.github.io/robots/](https://calliope-edu.github.io/robots/)
+## Calliope x LOFI Robot MakeCode Extension
 
 This extension can be used to build LOFI Robot models with fewer blocks while also integrating the necessary Bluetooth settings directly into the project.  
 Although you are not required to use the predefined blocks, it is still recommended to add this extension.
