@@ -182,20 +182,20 @@ namespace LofiRobot {
             }
         }
     }
-     /**
-         * Scroll the friendly name (e.g. "VIZIP") on the LED matrix.
-         * This is the name shown when connecting via Web Bluetooth.
-         */
-        //% block="Calliope mini BLE-device-name"
-        //% block.loc.de="Calliope mini BLE-Anzeigename"
-        //% block.loc.fr="Nom d'affichage Calliope mini BLE"
-        //% block.loc.es="Nombre de dispositivo Calliope mini BLE"
-        //% block.loc.it="Nome visualizzato Calliope mini BLE"
-        //% block.loc.el="Όνομα εμφάνισης Calliope mini BLE"
-        //% weight=95
-        export function showDeviceName(): void {
-            basic.showString(control.deviceName().toUpperCase())
-        }
+    /**
+     * Scroll the friendly name (e.g. "VIZIP") on the LED matrix.
+     * This is the name shown when connecting via Web Bluetooth.
+     */
+    //% block="Calliope mini BLE-device-name"
+    //% block.loc.de="Calliope mini BLE-Anzeigename"
+    //% block.loc.fr="Nom d'affichage Calliope mini BLE"
+    //% block.loc.es="Nombre de dispositivo Calliope mini BLE"
+    //% block.loc.it="Nome visualizzato Calliope mini BLE"
+    //% block.loc.el="Όνομα εμφάνισης Calliope mini BLE"
+    //% weight=95
+    export function showDeviceName(): void {
+        basic.showString(control.deviceName().toUpperCase())
+    }
     /**
      * Process movement data when received via Bluetooth
      * @param handler Code to be executed after processing movement data
