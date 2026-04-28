@@ -237,7 +237,7 @@ enum ControlCommands {
     CCommand
 }
 
-//% weight=20 color=#ff6900 icon=""
+//% weight=20 color=#ff6900 icon="\uf118"
 //% groups='["Bluetooth", "Face-App", "Control-App", "Erweitert"]'
 namespace LofiRobot {
     // Robot-Head variables
