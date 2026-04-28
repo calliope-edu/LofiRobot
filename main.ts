@@ -267,14 +267,13 @@ namespace LofiRobot {
     let gaze_in_r = 0
 
     let receivedString = ""
-    let bluetoothStarted = false
-    let serialStarted = false
-    let userHandler: () => void = null
+    let listenersStarted = false
+    let dataHandlers: (() => void)[] = []
     let controlHandlers: (() => void)[] = []
 
     // ---- shared parser ---------------------------------------------------
 
-    function processIncoming(data: string): void {
+    function parseData(data: string): void {
         if (!data || data.length < 19) return
         receivedString = data
 
@@ -303,29 +302,30 @@ namespace LofiRobot {
             gaze_in_l        = parseFloat(data.substr(37, 2))
             gaze_in_r        = parseFloat(data.substr(39, 2))
         }
+    }
 
-        if (userHandler) userHandler()
+    function dispatchHandlers(): void {
+        for (let i = 0; i < dataHandlers.length; i++) {
+            if (dataHandlers[i]) dataHandlers[i]()
+        }
         for (let i = 0; i < controlHandlers.length; i++) {
             if (controlHandlers[i]) controlHandlers[i]()
         }
     }
 
-    function ensureBluetooth(): void {
-        if (bluetoothStarted) return
+    function ensureListeners(): void {
+        if (listenersStarted) return
         bluetooth.startUartService()
         bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-            processIncoming(bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine)))
+            parseData(bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine)))
+            dispatchHandlers()
         })
-        bluetoothStarted = true
-    }
-
-    function ensureSerial(): void {
-        if (serialStarted) return
         serial.setRxBufferSize(128)
         serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-            processIncoming(serial.readUntil(serial.delimiters(Delimiters.NewLine)))
+            parseData(serial.readUntil(serial.delimiters(Delimiters.NewLine)))
+            dispatchHandlers()
         })
-        serialStarted = true
+        listenersStarted = true
     }
 
     // ---- Bluetooth subcategory -------------------------------------------
@@ -343,10 +343,14 @@ namespace LofiRobot {
     //% block.loc.it="Inizializza connessione (BLE o Serial)"
     //% block.loc.el="Αρχικοποίηση σύνδεσης (BLE ή Serial)"
     //% weight=100
-    //% subcategory="Bluetooth"
+    //% subcategory="Connection"
+    //% subcategory.loc.de="Verbindung"
+    //% subcategory.loc.fr="Connexion"
+    //% subcategory.loc.es="Conexión"
+    //% subcategory.loc.it="Connessione"
+    //% subcategory.loc.el="Σύνδεση"
     export function initializeConnection(): void {
-        ensureBluetooth()
-        ensureSerial()
+        ensureListeners()
         basic.showIcon(IconNames.Square)
         for (let i = 0; i < 3; i++) {
             led.plot(2, 2)
@@ -366,7 +370,12 @@ namespace LofiRobot {
     //% block.loc.it="Inizializza Bluetooth"
     //% block.loc.el="Αρχικοποίηση Bluetooth"
     //% weight=91
-    //% subcategory="Bluetooth"
+    //% subcategory="Connection"
+    //% subcategory.loc.de="Verbindung"
+    //% subcategory.loc.fr="Connexion"
+    //% subcategory.loc.es="Conexión"
+    //% subcategory.loc.it="Connessione"
+    //% subcategory.loc.el="Σύνδεση"
     export function initializeBluetooth(): void {
         initializeConnection()
     }
@@ -381,7 +390,12 @@ namespace LofiRobot {
     //% block.loc.it="Nome visualizzato Calliope mini BLE"
     //% block.loc.el="Όνομα εμφάνισης Calliope mini BLE"
     //% weight=85
-    //% subcategory="Bluetooth"
+    //% subcategory="Connection"
+    //% subcategory.loc.de="Verbindung"
+    //% subcategory.loc.fr="Connexion"
+    //% subcategory.loc.es="Conexión"
+    //% subcategory.loc.it="Connessione"
+    //% subcategory.loc.el="Σύνδεση"
     export function showDeviceName(): void {
         basic.showString(control.deviceName().toUpperCase())
     }
@@ -400,9 +414,8 @@ namespace LofiRobot {
     //% weight=90
     //% subcategory="Face-App"
     export function onDataReceived(handler: () => void): void {
-        ensureBluetooth()
-        ensureSerial()
-        userHandler = handler
+        ensureListeners()
+        dataHandlers.push(handler)
     }
 
     /**
@@ -503,8 +516,7 @@ namespace LofiRobot {
     //% weight=64
     //% subcategory="Control-App"
     export function onControlCommand(command: ControlCommands, handler: () => void): void {
-        ensureBluetooth()
-        ensureSerial()
+        ensureListeners()
         controlHandlers.push(function () {
             if (isControlCommand(command)) handler()
         })
