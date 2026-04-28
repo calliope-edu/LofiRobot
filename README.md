@@ -12,7 +12,7 @@ Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
 * öffne [https://makecode.calliope.cc/](https://makecode.calliope.cc/)
 * klicke auf **Neues Projekt**
 * klicke auf **Erweiterungen** unter dem Zahnrad-Menü
-* nach **https://github.com/calliope-edu/lofirobot** suchen und importieren
+* nach **https://github.com/calliope-edu/robots** suchen und importieren
 
 ## Dieses Projekt bearbeiten
 
@@ -20,7 +20,7 @@ Um dieses Repository in MakeCode zu bearbeiten.
 
 * öffne [https://makecode.calliope.cc/](https://makecode.calliope.cc/)
 * klicke auf **Importieren** und dann auf **Importiere URL**
-* füge **https://github.com/calliope-edu/lofirobot** ein und klicke auf Importieren
+* füge **https://github.com/calliope-edu/robots** ein und klicke auf Importieren
 
 #### Metadaten (verwendet für Suche, Rendering)
 

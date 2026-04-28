@@ -1,10 +1,12 @@
 /**
- * LOFI ROBOT — Bluetooth + Serial Extension
+ * LOFI ROBOT — Bluetooth / Serial Extension
  *
- * Receives face-tracking data from the FaceRobot web app over either
- * Bluetooth UART (mobile/desktop) or USB serial (desktop). The same
- * blocks expose the parsed values regardless of which transport was
- * used to deliver them.
+ * Receives face-tracking data from the FaceRobot web app over EITHER
+ * Bluetooth UART (mobile/desktop) OR USB serial (desktop) — the user
+ * picks one transport in the web app's connect menu; only one is
+ * active at a time. This extension starts listeners on both so the
+ * same blocks expose the parsed values regardless of which transport
+ * the web app chose.
  *
  * Payload layout (41 chars, ~10 Hz, terminated by \n):
  *   00-01  X            16     Roll (1)
@@ -26,18 +28,41 @@
 enum RobotAppType {
     //% block="Face-App"
     //% block.loc.de="Face-App"
+    //% block.loc.fr="Face-App"
+    //% block.loc.es="Face-App"
+    //% block.loc.it="Face-App"
+    //% block.loc.el="Face-App"
     FaceApp,
     //% block="Control"
     //% block.loc.de="Control"
+    //% block.loc.fr="Control"
+    //% block.loc.es="Control"
+    //% block.loc.it="Control"
+    //% block.loc.el="Control"
     Control
 }
 
 enum FaceValues {
     //% block="X"
+    //% block.loc.de="X"
+    //% block.loc.fr="X"
+    //% block.loc.es="X"
+    //% block.loc.it="X"
+    //% block.loc.el="X"
     X,
     //% block="Y"
+    //% block.loc.de="Y"
+    //% block.loc.fr="Y"
+    //% block.loc.es="Y"
+    //% block.loc.it="Y"
+    //% block.loc.el="Y"
     Y,
     //% block="Z"
+    //% block.loc.de="Z"
+    //% block.loc.fr="Z"
+    //% block.loc.es="Z"
+    //% block.loc.it="Z"
+    //% block.loc.el="Z"
     Z,
     //% block="Yaw"
     //% block.loc.de="Drehen"
@@ -76,59 +101,143 @@ enum FaceValues {
     RightEye,
     //% block="Brow Down Left"
     //% block.loc.de="Augenbraue Unten Links"
+    //% block.loc.fr="Sourcil Bas Gauche"
+    //% block.loc.es="Ceja Abajo Izquierda"
+    //% block.loc.it="Sopracciglio Giù Sinistra"
+    //% block.loc.el="Φρύδι Κάτω Αριστερά"
     BrowDownLeft,
     //% block="Brow Down Right"
     //% block.loc.de="Augenbraue Unten Rechts"
+    //% block.loc.fr="Sourcil Bas Droit"
+    //% block.loc.es="Ceja Abajo Derecha"
+    //% block.loc.it="Sopracciglio Giù Destra"
+    //% block.loc.el="Φρύδι Κάτω Δεξιά"
     BrowDownRight,
     //% block="Brow Inner Up"
     //% block.loc.de="Augenbraue Innen Oben"
+    //% block.loc.fr="Sourcil Intérieur Haut"
+    //% block.loc.es="Ceja Interior Arriba"
+    //% block.loc.it="Sopracciglio Interno Su"
+    //% block.loc.el="Φρύδι Εσωτερικό Πάνω"
     BrowInnerUp,
     //% block="Brow Outer Up Left"
     //% block.loc.de="Augenbraue Außen Oben Links"
+    //% block.loc.fr="Sourcil Extérieur Haut Gauche"
+    //% block.loc.es="Ceja Exterior Arriba Izquierda"
+    //% block.loc.it="Sopracciglio Esterno Su Sinistra"
+    //% block.loc.el="Φρύδι Εξωτερικό Πάνω Αριστερά"
     BrowOuterUpLeft,
     //% block="Brow Outer Up Right"
     //% block.loc.de="Augenbraue Außen Oben Rechts"
+    //% block.loc.fr="Sourcil Extérieur Haut Droit"
+    //% block.loc.es="Ceja Exterior Arriba Derecha"
+    //% block.loc.it="Sopracciglio Esterno Su Destra"
+    //% block.loc.el="Φρύδι Εξωτερικό Πάνω Δεξιά"
     BrowOuterUpRight,
     //% block="Gaze Down Left"
     //% block.loc.de="Blick Unten Links"
+    //% block.loc.fr="Regard Bas Gauche"
+    //% block.loc.es="Mirada Abajo Izquierda"
+    //% block.loc.it="Sguardo Giù Sinistra"
+    //% block.loc.el="Βλέμμα Κάτω Αριστερά"
     GazeDownLeft,
     //% block="Gaze Down Right"
     //% block.loc.de="Blick Unten Rechts"
+    //% block.loc.fr="Regard Bas Droit"
+    //% block.loc.es="Mirada Abajo Derecha"
+    //% block.loc.it="Sguardo Giù Destra"
+    //% block.loc.el="Βλέμμα Κάτω Δεξιά"
     GazeDownRight,
     //% block="Gaze Up Left"
     //% block.loc.de="Blick Oben Links"
+    //% block.loc.fr="Regard Haut Gauche"
+    //% block.loc.es="Mirada Arriba Izquierda"
+    //% block.loc.it="Sguardo Su Sinistra"
+    //% block.loc.el="Βλέμμα Πάνω Αριστερά"
     GazeUpLeft,
     //% block="Gaze Up Right"
     //% block.loc.de="Blick Oben Rechts"
+    //% block.loc.fr="Regard Haut Droit"
+    //% block.loc.es="Mirada Arriba Derecha"
+    //% block.loc.it="Sguardo Su Destra"
+    //% block.loc.el="Βλέμμα Πάνω Δεξιά"
     GazeUpRight,
     //% block="Gaze In Left"
     //% block.loc.de="Blick Innen Links"
+    //% block.loc.fr="Regard Intérieur Gauche"
+    //% block.loc.es="Mirada Interior Izquierda"
+    //% block.loc.it="Sguardo Interno Sinistra"
+    //% block.loc.el="Βλέμμα Εσωτερικό Αριστερά"
     GazeInLeft,
     //% block="Gaze In Right"
     //% block.loc.de="Blick Innen Rechts"
+    //% block.loc.fr="Regard Intérieur Droit"
+    //% block.loc.es="Mirada Interior Derecha"
+    //% block.loc.it="Sguardo Interno Destra"
+    //% block.loc.el="Βλέμμα Εσωτερικό Δεξιά"
     GazeInRight
 }
 
 enum ControlCommands {
     //% blockId="control_up" block="↑"
+    //% block.loc.de="↑"
+    //% block.loc.fr="↑"
+    //% block.loc.es="↑"
+    //% block.loc.it="↑"
+    //% block.loc.el="↑"
     Up,
     //% blockId="control_down" block="↓"
+    //% block.loc.de="↓"
+    //% block.loc.fr="↓"
+    //% block.loc.es="↓"
+    //% block.loc.it="↓"
+    //% block.loc.el="↓"
     Down,
     //% blockId="control_left" block="←"
+    //% block.loc.de="←"
+    //% block.loc.fr="←"
+    //% block.loc.es="←"
+    //% block.loc.it="←"
+    //% block.loc.el="←"
     Left,
     //% blockId="control_right" block="→"
+    //% block.loc.de="→"
+    //% block.loc.fr="→"
+    //% block.loc.es="→"
+    //% block.loc.it="→"
+    //% block.loc.el="→"
     Right,
     //% blockId="control_horn" block="🔊"
+    //% block.loc.de="🔊"
+    //% block.loc.fr="🔊"
+    //% block.loc.es="🔊"
+    //% block.loc.it="🔊"
+    //% block.loc.el="🔊"
     Horn,
     //% blockId="control_stop" block="⏹"
+    //% block.loc.de="⏹"
+    //% block.loc.fr="⏹"
+    //% block.loc.es="⏹"
+    //% block.loc.it="⏹"
+    //% block.loc.el="⏹"
     Stop,
     //% blockId="control_x" block="Slider1"
+    //% block.loc.de="Slider1"
+    //% block.loc.fr="Slider1"
+    //% block.loc.es="Slider1"
+    //% block.loc.it="Slider1"
+    //% block.loc.el="Slider1"
     XCommand,
     //% blockId="control_c" block="Slider2"
+    //% block.loc.de="Slider2"
+    //% block.loc.fr="Slider2"
+    //% block.loc.es="Slider2"
+    //% block.loc.it="Slider2"
+    //% block.loc.el="Slider2"
     CCommand
 }
 
-//% weight=20 color=#ff6900 icon=""
+//% weight=20 color=#ff6900 icon=""
 //% groups='["Bluetooth", "Face-App", "Control-App", "Erweitert"]'
 namespace LofiRobot {
     // Robot-Head variables
@@ -222,12 +331,17 @@ namespace LofiRobot {
     // ---- Bluetooth subcategory -------------------------------------------
 
     /**
-     * Initialize the connection. Starts both Bluetooth UART and USB serial
-     * listeners so the same downstream blocks work regardless of which
-     * transport the FaceRobot app used.
+     * Initialize the connection. The user connects EITHER via Bluetooth OR
+     * via USB serial from the FaceRobot app — only one transport is active
+     * at a time. This block starts listeners for both, so the same
+     * downstream blocks fire regardless of which transport was chosen.
      */
-    //% block="Initialize connection (BLE + Serial)"
-    //% block.loc.de="Verbindung initialisieren (BLE + Serial)"
+    //% block="Initialize connection (BLE or Serial)"
+    //% block.loc.de="Verbindung initialisieren (BLE oder Serial)"
+    //% block.loc.fr="Initialiser la connexion (BLE ou Serial)"
+    //% block.loc.es="Inicializar conexión (BLE o Serial)"
+    //% block.loc.it="Inizializza connessione (BLE o Serial)"
+    //% block.loc.el="Αρχικοποίηση σύνδεσης (BLE ή Serial)"
     //% weight=100
     //% subcategory="Bluetooth"
     export function initializeConnection(): void {
@@ -243,8 +357,7 @@ namespace LofiRobot {
     }
 
     /**
-     * Backwards-compatible alias for older programs. Internally starts both
-     * BLE and Serial.
+     * Backwards-compatible alias for older programs.
      */
     //% block="Initialize Bluetooth"
     //% block.loc.de="Bluetooth initialisieren"
