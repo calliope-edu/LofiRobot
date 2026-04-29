@@ -267,9 +267,10 @@ namespace LofiRobot {
     let gaze_in_r = 0
 
     let receivedString = ""
-    let bleStarted = false
-    let serialStarted = false
-    let dataHandlers: (() => void)[] = []
+    let bleServiceStarted = false
+    let serialServiceStarted = false
+    let bleListenerStarted = false
+    let serialListenerStarted = false
     let controlHandlers: (() => void)[] = []
 
     // ---- shared parser ---------------------------------------------------
@@ -305,33 +306,16 @@ namespace LofiRobot {
         }
     }
 
-    function dispatchHandlers(): void {
-        for (let i = 0; i < dataHandlers.length; i++) {
-            if (dataHandlers[i]) dataHandlers[i]()
-        }
-        for (let i = 0; i < controlHandlers.length; i++) {
-            if (controlHandlers[i]) controlHandlers[i]()
-        }
-    }
-
-    function startBluetoothListener(): void {
-        if (bleStarted) return
+    function startBleService(): void {
+        if (bleServiceStarted) return
         bluetooth.startUartService()
-        bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-            parseData(bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine)))
-            dispatchHandlers()
-        })
-        bleStarted = true
+        bleServiceStarted = true
     }
 
-    function startSerialListener(): void {
-        if (serialStarted) return
+    function startSerialService(): void {
+        if (serialServiceStarted) return
         serial.setRxBufferSize(128)
-        serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
-            parseData(serial.readUntil(serial.delimiters(Delimiters.NewLine)))
-            dispatchHandlers()
-        })
-        serialStarted = true
+        serialServiceStarted = true
     }
 
     // ---- Bluetooth subcategory -------------------------------------------
@@ -366,7 +350,7 @@ namespace LofiRobot {
     //% subcategory.loc.it="Connessione"
     //% subcategory.loc.el="Σύνδεση"
     export function initializeBluetooth(): void {
-        startBluetoothListener()
+        startBleService()
         showInitAnimation()
     }
 
@@ -388,7 +372,7 @@ namespace LofiRobot {
     //% subcategory.loc.it="Connessione"
     //% subcategory.loc.el="Σύνδεση"
     export function initializeSerial(): void {
-        startSerialListener()
+        startSerialService()
         showInitAnimation()
     }
 
@@ -413,8 +397,8 @@ namespace LofiRobot {
     //% subcategory.loc.el="Σύνδεση"
     //% advanced=true
     export function initializeConnection(): void {
-        startBluetoothListener()
-        startSerialListener()
+        startBleService()
+        startSerialService()
         showInitAnimation()
     }
 
@@ -452,7 +436,35 @@ namespace LofiRobot {
     //% weight=90
     //% subcategory="Face-App"
     export function onDataReceived(handler: () => void): void {
-        dataHandlers.push(handler)
+        // Auto-start BLE service so the listener registration below is valid
+        // even if the user calls onDataReceived before initializeBluetooth.
+        startBleService()
+        if (!bleListenerStarted) {
+            bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+                receivedString = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine))
+                parseData(receivedString)
+                handler()
+                for (let i = 0; i < controlHandlers.length; i++) {
+                    if (controlHandlers[i]) controlHandlers[i]()
+                }
+            })
+            bleListenerStarted = true
+        }
+        // Register the serial listener too IF the user has explicitly opted
+        // into Serial via initializeSerial() / initializeConnection(). We
+        // never register Serial automatically because doing so on some
+        // Calliope firmware revisions interferes with BLE UART receive.
+        if (serialServiceStarted && !serialListenerStarted) {
+            serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+                receivedString = serial.readUntil(serial.delimiters(Delimiters.NewLine))
+                parseData(receivedString)
+                handler()
+                for (let i = 0; i < controlHandlers.length; i++) {
+                    if (controlHandlers[i]) controlHandlers[i]()
+                }
+            })
+            serialListenerStarted = true
+        }
     }
 
     /**
