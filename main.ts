@@ -267,7 +267,8 @@ namespace LofiRobot {
     let gaze_in_r = 0
 
     let receivedString = ""
-    let listenersStarted = false
+    let bleStarted = false
+    let serialStarted = false
     let dataHandlers: (() => void)[] = []
     let controlHandlers: (() => void)[] = []
 
@@ -313,44 +314,29 @@ namespace LofiRobot {
         }
     }
 
-    function ensureListeners(): void {
-        if (listenersStarted) return
+    function startBluetoothListener(): void {
+        if (bleStarted) return
         bluetooth.startUartService()
         bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
             parseData(bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine)))
             dispatchHandlers()
         })
+        bleStarted = true
+    }
+
+    function startSerialListener(): void {
+        if (serialStarted) return
         serial.setRxBufferSize(128)
         serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
             parseData(serial.readUntil(serial.delimiters(Delimiters.NewLine)))
             dispatchHandlers()
         })
-        listenersStarted = true
+        serialStarted = true
     }
 
     // ---- Bluetooth subcategory -------------------------------------------
 
-    /**
-     * Initialize the connection. The user connects EITHER via Bluetooth OR
-     * via USB serial from the FaceRobot app — only one transport is active
-     * at a time. This block starts listeners for both, so the same
-     * downstream blocks fire regardless of which transport was chosen.
-     */
-    //% block="Initialize connection (BLE or Serial)"
-    //% block.loc.de="Verbindung initialisieren (BLE oder Serial)"
-    //% block.loc.fr="Initialiser la connexion (BLE ou Serial)"
-    //% block.loc.es="Inicializar conexión (BLE o Serial)"
-    //% block.loc.it="Inizializza connessione (BLE o Serial)"
-    //% block.loc.el="Αρχικοποίηση σύνδεσης (BLE ή Serial)"
-    //% weight=100
-    //% subcategory="Connection"
-    //% subcategory.loc.de="Verbindung"
-    //% subcategory.loc.fr="Connexion"
-    //% subcategory.loc.es="Conexión"
-    //% subcategory.loc.it="Connessione"
-    //% subcategory.loc.el="Σύνδεση"
-    export function initializeConnection(): void {
-        ensureListeners()
+    function showInitAnimation(): void {
         basic.showIcon(IconNames.Square)
         for (let i = 0; i < 3; i++) {
             led.plot(2, 2)
@@ -361,7 +347,10 @@ namespace LofiRobot {
     }
 
     /**
-     * Backwards-compatible alias for older programs.
+     * Initialize the Bluetooth connection only. Use this if the FaceRobot
+     * app connects via BLE (mobile or desktop). Don't combine with the
+     * Serial init — registering both has been observed to break BLE UART
+     * receive on some Calliope firmware revisions.
      */
     //% block="Initialize Bluetooth"
     //% block.loc.de="Bluetooth initialisieren"
@@ -369,7 +358,7 @@ namespace LofiRobot {
     //% block.loc.es="Inicializar Bluetooth"
     //% block.loc.it="Inizializza Bluetooth"
     //% block.loc.el="Αρχικοποίηση Bluetooth"
-    //% weight=91
+    //% weight=100
     //% subcategory="Connection"
     //% subcategory.loc.de="Verbindung"
     //% subcategory.loc.fr="Connexion"
@@ -377,7 +366,56 @@ namespace LofiRobot {
     //% subcategory.loc.it="Connessione"
     //% subcategory.loc.el="Σύνδεση"
     export function initializeBluetooth(): void {
-        initializeConnection()
+        startBluetoothListener()
+        showInitAnimation()
+    }
+
+    /**
+     * Initialize the USB Serial connection only. Use this if the FaceRobot
+     * app connects via Web Serial (desktop only).
+     */
+    //% block="Initialize Serial"
+    //% block.loc.de="Serial initialisieren"
+    //% block.loc.fr="Initialiser Serial"
+    //% block.loc.es="Inicializar Serial"
+    //% block.loc.it="Inizializza Serial"
+    //% block.loc.el="Αρχικοποίηση Serial"
+    //% weight=98
+    //% subcategory="Connection"
+    //% subcategory.loc.de="Verbindung"
+    //% subcategory.loc.fr="Connexion"
+    //% subcategory.loc.es="Conexión"
+    //% subcategory.loc.it="Connessione"
+    //% subcategory.loc.el="Σύνδεση"
+    export function initializeSerial(): void {
+        startSerialListener()
+        showInitAnimation()
+    }
+
+    /**
+     * Initialize BOTH Bluetooth UART and USB serial. Convenient if you don't
+     * yet know which transport will be used, but note that on some Calliope
+     * firmware revisions starting both can break BLE receive. If BLE doesn't
+     * deliver data, switch to "Initialize Bluetooth" alone.
+     */
+    //% block="Initialize connection (BLE or Serial)"
+    //% block.loc.de="Verbindung initialisieren (BLE oder Serial)"
+    //% block.loc.fr="Initialiser la connexion (BLE ou Serial)"
+    //% block.loc.es="Inicializar conexión (BLE o Serial)"
+    //% block.loc.it="Inizializza connessione (BLE o Serial)"
+    //% block.loc.el="Αρχικοποίηση σύνδεσης (BLE ή Serial)"
+    //% weight=95
+    //% subcategory="Connection"
+    //% subcategory.loc.de="Verbindung"
+    //% subcategory.loc.fr="Connexion"
+    //% subcategory.loc.es="Conexión"
+    //% subcategory.loc.it="Connessione"
+    //% subcategory.loc.el="Σύνδεση"
+    //% advanced=true
+    export function initializeConnection(): void {
+        startBluetoothListener()
+        startSerialListener()
+        showInitAnimation()
     }
 
     /**
@@ -414,7 +452,6 @@ namespace LofiRobot {
     //% weight=90
     //% subcategory="Face-App"
     export function onDataReceived(handler: () => void): void {
-        ensureListeners()
         dataHandlers.push(handler)
     }
 
@@ -516,7 +553,6 @@ namespace LofiRobot {
     //% weight=64
     //% subcategory="Control-App"
     export function onControlCommand(command: ControlCommands, handler: () => void): void {
-        ensureListeners()
         controlHandlers.push(function () {
             if (isControlCommand(command)) handler()
         })

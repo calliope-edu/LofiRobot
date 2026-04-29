@@ -39,5 +39,8 @@
     "ControlCommands.Horn|block": "🔊",
     "ControlCommands.Stop|block": "⏹",
     "ControlCommands.XCommand|block": "Slider1",
-    "ControlCommands.CCommand|block": "Slider2"
+    "ControlCommands.CCommand|block": "Slider2",
+    "LofiRobot.initializeSerial|block": "Initialiser Serial",
+    "Connection|subcategory": "Connexion",
+    "LofiRobot|subcategory|Connection": "Connexion"
 }
