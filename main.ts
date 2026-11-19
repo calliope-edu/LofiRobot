@@ -131,7 +131,70 @@ enum SliderNumber {
     //% block.loc.es="Slider2"
     //% block.loc.it="Slider2"
     //% block.loc.el="Slider2"
-    Slider2
+    Slider2,
+    //% block="↑"
+    //% block.loc.de="↑"
+    //% block.loc.fr="↑"
+    //% block.loc.es="↑"
+    //% block.loc.it="↑"
+    //% block.loc.el="↑"
+    Up,
+    //% block="↓"
+    //% block.loc.de="↓"
+    //% block.loc.fr="↓"
+    //% block.loc.es="↓"
+    //% block.loc.it="↓"
+    //% block.loc.el="↓"
+    Down,
+    //% block="←"
+    //% block.loc.de="←"
+    //% block.loc.fr="←"
+    //% block.loc.es="←"
+    //% block.loc.it="←"
+    //% block.loc.el="←"
+    Left,
+    //% block="→"
+    //% block.loc.de="→"
+    //% block.loc.fr="→"
+    //% block.loc.es="→"
+    //% block.loc.it="→"
+    //% block.loc.el="→"
+    Right,
+    //% block="🔊"
+    //% block.loc.de="🔊"
+    //% block.loc.fr="🔊"
+    //% block.loc.es="🔊"
+    //% block.loc.it="🔊"
+    //% block.loc.el="🔊"
+    Horn,
+    //% block="A"
+    //% block.loc.de="A"
+    //% block.loc.fr="A"
+    //% block.loc.es="A"
+    //% block.loc.it="A"
+    //% block.loc.el="A"
+    ButtonA,
+    //% block="B"
+    //% block.loc.de="B"
+    //% block.loc.fr="B"
+    //% block.loc.es="B"
+    //% block.loc.it="B"
+    //% block.loc.el="B"
+    ButtonB,
+    //% block="Joystick X"
+    //% block.loc.de="Joystick X"
+    //% block.loc.fr="Joystick X"
+    //% block.loc.es="Joystick X"
+    //% block.loc.it="Joystick X"
+    //% block.loc.el="Joystick X"
+    JoystickX,
+    //% block="Joystick Y"
+    //% block.loc.de="Joystick Y"
+    //% block.loc.fr="Joystick Y"
+    //% block.loc.es="Joystick Y"
+    //% block.loc.it="Joystick Y"
+    //% block.loc.el="Joystick Y"
+    JoystickY
 }
 
 enum JoystickAxis {
@@ -176,20 +239,6 @@ enum ControlMode {
 }
 
 enum ControlCommands {
-    //% blockId="control_up" block="↑"
-    //% block.loc.de="↑"
-    //% block.loc.fr="↑"
-    //% block.loc.es="↑"
-    //% block.loc.it="↑"
-    //% block.loc.el="↑"
-    Up,
-    //% blockId="control_down" block="↓"
-    //% block.loc.de="↓"
-    //% block.loc.fr="↓"
-    //% block.loc.es="↓"
-    //% block.loc.it="↓"
-    //% block.loc.el="↓"
-    Down,
     //% blockId="control_left" block="←"
     //% block.loc.de="←"
     //% block.loc.fr="←"
@@ -197,6 +246,13 @@ enum ControlCommands {
     //% block.loc.it="←"
     //% block.loc.el="←"
     Left,
+    //% blockId="control_up" block="↑"
+    //% block.loc.de="↑"
+    //% block.loc.fr="↑"
+    //% block.loc.es="↑"
+    //% block.loc.it="↑"
+    //% block.loc.el="↑"
+    Up,
     //% blockId="control_right" block="→"
     //% block.loc.de="→"
     //% block.loc.fr="→"
@@ -204,6 +260,13 @@ enum ControlCommands {
     //% block.loc.it="→"
     //% block.loc.el="→"
     Right,
+    //% blockId="control_down" block="↓"
+    //% block.loc.de="↓"
+    //% block.loc.fr="↓"
+    //% block.loc.es="↓"
+    //% block.loc.it="↓"
+    //% block.loc.el="↓"
+    Down,
     //% blockId="control_horn" block="🔊"
     //% block.loc.de="🔊"
     //% block.loc.fr="🔊"
@@ -211,13 +274,6 @@ enum ControlCommands {
     //% block.loc.it="🔊"
     //% block.loc.el="🔊"
     Horn,
-    //% blockId="control_stop" block="⏹"
-    //% block.loc.de="⏹"
-    //% block.loc.fr="⏹"
-    //% block.loc.es="⏹"
-    //% block.loc.it="⏹"
-    //% block.loc.el="⏹"
-    Stop,
     //% blockId="control_x" block="Slider1"
     //% block.loc.de="Slider1"
     //% block.loc.fr="Slider1"
@@ -225,6 +281,13 @@ enum ControlCommands {
     //% block.loc.it="Slider1"
     //% block.loc.el="Slider1"
     XCommand,
+    //% blockId="control_stop" block="⏹"
+    //% block.loc.de="⏹"
+    //% block.loc.fr="⏹"
+    //% block.loc.es="⏹"
+    //% block.loc.it="⏹"
+    //% block.loc.el="⏹"
+    Stop,
     //% blockId="control_c" block="Slider2"
     //% block.loc.de="Slider2"
     //% block.loc.fr="Slider2"
@@ -296,6 +359,15 @@ namespace LofiRobot {
     let slider1 = 0
     let slider2 = 0
     let legacy_control_value = 0
+
+    // Button states (1 = pressed). The app sends "UP" on press and "up" on release.
+    let upPressed = 0
+    let downPressed = 0
+    let leftPressed = 0
+    let rightPressed = 0
+    let hornPressed = 0
+    let aPressed = 0
+    let bPressed = 0
 
     // Joystick / Tilt values (-90..90), shared by "analog" and "tilt" modes
     let joystickX = 0
@@ -468,6 +540,7 @@ namespace LofiRobot {
     //% block.loc.el="εμφάνιση γραφήματος στηλών για δεδομένα κίνησης της τιμής %valueType"
     //% weight=84
     //% group="Facerobot-App"
+    //% blockHidden=true
     export function showRobotHeadBarGraph(valueType: FaceValues): void {
         let maxValue = 100
         // Roll and Smile are transmitted as a single digit
@@ -508,9 +581,9 @@ namespace LofiRobot {
     //% block.loc.it="Quando viene ricevuto il comando di controllo %command"
     //% block.loc.el="Όταν λαμβάνεται εντολή ελέγχου %command"
     //% command.fieldEditor="gridpicker"
-    //% command.fieldOptions.columns=4
-    //% command.fieldOptions.width="300"
-    //% command.fieldOptions.maxRows=2
+    //% command.fieldOptions.columns=2
+    //% command.fieldOptions.width="200"
+    //% command.fieldOptions.maxRows=4
     //% weight=80
     //% group="Control-App"
     export function onControlCommand(command: ControlCommands, handler: () => void): void {
@@ -522,8 +595,9 @@ namespace LofiRobot {
     }
 
     /**
-     * Returns the value of one of the two sliders of the Control-App
-     * @param slider Slider1 or Slider2
+     * Returns a value of the Control-App: sliders (0..180), buttons
+     * (1 = pressed, 0 = released) or joystick / tilt (-90..90)
+     * @param slider the value to read
      */
     //% block="value of %slider"
     //% block.loc.de="Wert von %slider"
@@ -534,10 +608,32 @@ namespace LofiRobot {
     //% weight=78
     //% group="Control-App"
     export function getSliderValue(slider: SliderNumber): number {
-        if (slider == SliderNumber.Slider1) {
-            return slider1
+        switch (slider) {
+            case SliderNumber.Slider1:
+                return slider1
+            case SliderNumber.Slider2:
+                return slider2
+            case SliderNumber.Up:
+                return upPressed
+            case SliderNumber.Down:
+                return downPressed
+            case SliderNumber.Left:
+                return leftPressed
+            case SliderNumber.Right:
+                return rightPressed
+            case SliderNumber.Horn:
+                return hornPressed
+            case SliderNumber.ButtonA:
+                return aPressed
+            case SliderNumber.ButtonB:
+                return bPressed
+            case SliderNumber.JoystickX:
+                return joystickX
+            case SliderNumber.JoystickY:
+                return joystickY
+            default:
+                return 0
         }
-        return slider2
     }
 
     /**
@@ -604,8 +700,8 @@ namespace LofiRobot {
     //% block.loc.es="cuando el modo de control cambia a %mode"
     //% block.loc.it="quando la modalità di controllo cambia in %mode"
     //% block.loc.el="όταν η λειτουργία ελέγχου αλλάζει σε %mode"
-    //% weight=70
-    //% group="Control-App"
+    //% weight=56
+    //% group="Fortgeschritten"
     export function onControlModeChanged(mode: ControlMode, handler: () => void): void {
         modeHandlers.push(function () {
             if (currentMode == (mode as number)) {
@@ -625,9 +721,9 @@ namespace LofiRobot {
     //% block.loc.it="Comando di controllo ricevuto %command"
     //% block.loc.el="Εντολή ελέγχου ελήφθη %command"
     //% command.fieldEditor="gridpicker"
-    //% command.fieldOptions.columns=4
-    //% command.fieldOptions.width="300"
-    //% command.fieldOptions.maxRows=2
+    //% command.fieldOptions.columns=2
+    //% command.fieldOptions.width="200"
+    //% command.fieldOptions.maxRows=4
     //% weight=60
     //% group="Fortgeschritten"
     export function isControlCommand(command: ControlCommands): boolean {
@@ -738,7 +834,27 @@ namespace LofiRobot {
         }
     }
 
+    function updateButtonStates(): void {
+        switch (receivedString) {
+            case "UP": upPressed = 1; break
+            case "up": upPressed = 0; break
+            case "DOWN": downPressed = 1; break
+            case "down": downPressed = 0; break
+            case "LEFT": leftPressed = 1; break
+            case "left": leftPressed = 0; break
+            case "RIGHT": rightPressed = 1; break
+            case "right": rightPressed = 0; break
+            case "HORN": hornPressed = 1; break
+            case "horn": hornPressed = 0; break
+            case "A": aPressed = 1; break
+            case "a": aPressed = 0; break
+            case "B": bPressed = 1; break
+            case "b": bPressed = 0; break
+        }
+    }
+
     function updateControlValues(): void {
+        updateButtonStates()
         if (receivedString.charAt(0) == "c") {
             slider1 = parseFloat(receivedString.substr(1, 3))
             return
