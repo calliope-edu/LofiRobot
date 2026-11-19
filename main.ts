@@ -134,6 +134,47 @@ enum SliderNumber {
     Slider2
 }
 
+enum JoystickAxis {
+    //% block="X"
+    //% block.loc.de="X"
+    //% block.loc.fr="X"
+    //% block.loc.es="X"
+    //% block.loc.it="X"
+    //% block.loc.el="X"
+    X,
+    //% block="Y"
+    //% block.loc.de="Y"
+    //% block.loc.fr="Y"
+    //% block.loc.es="Y"
+    //% block.loc.it="Y"
+    //% block.loc.el="Y"
+    Y
+}
+
+enum ControlMode {
+    //% block="D-Pad"
+    //% block.loc.de="D-Pad"
+    //% block.loc.fr="D-Pad"
+    //% block.loc.es="D-Pad"
+    //% block.loc.it="D-Pad"
+    //% block.loc.el="D-Pad"
+    DPad,
+    //% block="Joystick"
+    //% block.loc.de="Joystick"
+    //% block.loc.fr="Joystick"
+    //% block.loc.es="Joystick"
+    //% block.loc.it="Joystick"
+    //% block.loc.el="Joystick"
+    Analog,
+    //% block="Tilt"
+    //% block.loc.de="Neigung"
+    //% block.loc.fr="Inclinaison"
+    //% block.loc.es="Inclinación"
+    //% block.loc.it="Inclinazione"
+    //% block.loc.el="Κλίση"
+    Tilt
+}
+
 enum ControlCommands {
     //% blockId="control_up" block="↑"
     //% block.loc.de="↑"
@@ -256,11 +297,21 @@ namespace LofiRobot {
     let slider2 = 0
     let legacy_control_value = 0
 
+    // Joystick / Tilt values (-90..90), shared by "analog" and "tilt" modes
+    let joystickX = 0
+    let joystickY = 0
+
+    // Current control mode as reported by the Control-App
+    // 0 = D-Pad, 1 = Joystick (analog), 2 = Tilt (accelerometer)
+    let currentMode = 0
+
     let receivedString = ""
     let listenerStarted = false
     let legacyControlIcons = false
     let dataHandlers: (() => void)[] = []
     let controlHandlers: (() => void)[] = []
+    let joystickHandlers: (() => void)[] = []
+    let modeHandlers: (() => void)[] = []
 
     /**
      * Starts the connection to the app and the reception of data.
@@ -490,6 +541,80 @@ namespace LofiRobot {
     }
 
     /**
+     * Executed every time new joystick or tilt data arrives from
+     * the Control-App (Joystick or Tilt mode).
+     * @param handler Code to be executed
+     */
+    //% block="on joystick data received"
+    //% block.loc.de="wenn Joystick-Daten empfangen"
+    //% block.loc.fr="quand les données du joystick sont reçues"
+    //% block.loc.es="cuando se reciben datos del joystick"
+    //% block.loc.it="quando vengono ricevuti dati del joystick"
+    //% block.loc.el="όταν λαμβάνονται δεδομένα joystick"
+    //% weight=76
+    //% group="Control-App"
+    export function onJoystickDataReceived(handler: () => void): void {
+        joystickHandlers.push(handler)
+    }
+
+    /**
+     * Returns the joystick / tilt value for the selected axis.
+     * Range: -90 to +90. Works in both Joystick and Tilt mode.
+     * @param axis X or Y axis
+     */
+    //% block="joystick value %axis"
+    //% block.loc.de="Joystick Wert %axis"
+    //% block.loc.fr="valeur du joystick %axis"
+    //% block.loc.es="valor del joystick %axis"
+    //% block.loc.it="valore del joystick %axis"
+    //% block.loc.el="τιμή joystick %axis"
+    //% weight=74
+    //% group="Control-App"
+    export function getJoystickValue(axis: JoystickAxis): number {
+        if (axis == JoystickAxis.X) {
+            return joystickX
+        }
+        return joystickY
+    }
+
+    /**
+     * True while the Control-App is in the selected mode.
+     * @param mode D-Pad, Joystick or Tilt
+     */
+    //% block="control mode is %mode"
+    //% block.loc.de="Steuerungsmodus ist %mode"
+    //% block.loc.fr="le mode de contrôle est %mode"
+    //% block.loc.es="el modo de control es %mode"
+    //% block.loc.it="la modalità di controllo è %mode"
+    //% block.loc.el="η λειτουργία ελέγχου είναι %mode"
+    //% weight=72
+    //% group="Control-App"
+    export function isControlMode(mode: ControlMode): boolean {
+        return currentMode == (mode as number)
+    }
+
+    /**
+     * Executed whenever the Control-App switches to the selected mode.
+     * @param mode D-Pad, Joystick or Tilt
+     * @param handler Code to be executed
+     */
+    //% block="on control mode changed to %mode"
+    //% block.loc.de="wenn Steuerungsmodus wechselt zu %mode"
+    //% block.loc.fr="quand le mode de contrôle change pour %mode"
+    //% block.loc.es="cuando el modo de control cambia a %mode"
+    //% block.loc.it="quando la modalità di controllo cambia in %mode"
+    //% block.loc.el="όταν η λειτουργία ελέγχου αλλάζει σε %mode"
+    //% weight=70
+    //% group="Control-App"
+    export function onControlModeChanged(mode: ControlMode, handler: () => void): void {
+        modeHandlers.push(function () {
+            if (currentMode == (mode as number)) {
+                handler()
+            }
+        })
+    }
+
+    /**
      * Check if a specific control command is currently present.
      * @param command Choose the control command to check for
      */
@@ -566,6 +691,42 @@ namespace LofiRobot {
 
             for (let i = 0; i < dataHandlers.length; i++) {
                 dataHandlers[i]()
+            }
+            return
+        }
+
+        // Joystick / Tilt packet: "X+45,Y-30" (9 chars, uppercase X)
+        if (receivedString.length >= 9 && receivedString.charAt(0) == "X"
+            && receivedString.charAt(4) == "," && receivedString.charAt(5) == "Y") {
+            let sx = receivedString.charAt(1) == "-" ? -1 : 1
+            let sy = receivedString.charAt(6) == "-" ? -1 : 1
+            joystickX = sx * parseFloat(receivedString.substr(2, 2))
+            joystickY = sy * parseFloat(receivedString.substr(7, 2))
+            for (let k = 0; k < joystickHandlers.length; k++) {
+                joystickHandlers[k]()
+            }
+            return
+        }
+
+        // Mode switch messages from the Control-App
+        if (receivedString == "mode_dpad") {
+            currentMode = ControlMode.DPad
+            for (let m = 0; m < modeHandlers.length; m++) {
+                modeHandlers[m]()
+            }
+            return
+        }
+        if (receivedString == "mode_analog") {
+            currentMode = ControlMode.Analog
+            for (let m = 0; m < modeHandlers.length; m++) {
+                modeHandlers[m]()
+            }
+            return
+        }
+        if (receivedString == "mode_accelerometer") {
+            currentMode = ControlMode.Tilt
+            for (let m = 0; m < modeHandlers.length; m++) {
+                modeHandlers[m]()
             }
             return
         }
